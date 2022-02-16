@@ -1,0 +1,14 @@
+{
+  "name": "xseplugin",
+  "version": "1",
+  "dependencies": [
+    "boost-stl-interfaces",
+    "fmt",
+    "rsm-binary-io",
+    "spdlog"
+  ],
+  "builtin-baseline": "7e7dad5fe20cdc085731343e0e197a7ae655555b",
+  "overrides": [
+    { "name": "fmt", "version": "8.0.1" }
+  ]
+}
