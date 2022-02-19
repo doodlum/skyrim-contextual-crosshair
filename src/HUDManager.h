@@ -18,7 +18,8 @@ public:
 	void UpdateHUD(RE::PlayerCharacter* player, float delta);
 
 	static inline double maxOpacity = 100;
-	static inline double fadeSpeed = 5.0;
+	static inline double fadeSpeed = 1.0; // seconds
+	static inline double alpha = 0.0;
 
 
 protected:
@@ -46,5 +47,12 @@ protected:
 
 
 private:
-	HUDManager() = default;
+	constexpr HUDManager() noexcept = default;
+	HUDManager(const HUDManager&) = delete;
+	HUDManager(HUDManager&&) = delete;
+
+	~HUDManager() = default;
+
+	HUDManager& operator=(const HUDManager&) = delete;
+	HUDManager& operator=(HUDManager&&) = delete;
 };
