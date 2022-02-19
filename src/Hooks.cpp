@@ -1,11 +1,11 @@
 #include "Hooks.h"
-#include "ConditionalHUDDisplay.h"
+#include "HUDManager.h"
 
 namespace Hooks
 {
 	void Hooks::Install()
 	{
-		ConditionalHUDDisplay::InstallHooks();
+		HUDManager::InstallHooks();
 		logger::info("Installed all hooks");
 	}
 }
