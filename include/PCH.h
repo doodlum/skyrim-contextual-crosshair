@@ -52,6 +52,13 @@ namespace stl
 		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[0] };
 		T::func = vtbl.write_vfunc(idx, T::thunk);
 	}
+
+	template <std::size_t idx, class T>
+	void write_vfunc(REL::ID id)
+	{
+		REL::Relocation<std::uintptr_t> vtbl{ id };
+		T::func = vtbl.write_vfunc(idx, T::thunk);
+	}
 }
 
 namespace logger = SKSE::log;

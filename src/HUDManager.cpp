@@ -1,9 +1,7 @@
 #include "HUDManager.h"
+#include "RE/RE.h"
 
 using namespace std;
-using WEAPON_STATE = RE::WEAPON_STATE;
-using ATTACK_STATE = RE::ATTACK_STATE_ENUM;
-using PLAYER_ACTION = RE::PLAYER_ACTION;
 
 [[nodiscard]] RE::GFxValue GetGFxValue(const char* a_pathToVar)
 {
@@ -18,53 +16,73 @@ using PLAYER_ACTION = RE::PLAYER_ACTION;
 	return object;
 }
 
-
-bool IsCasting(RE::Actor* actor, RE::SpellItem* a_spell)
-{
-	using func_t = decltype(&IsCasting);
-	REL::Relocation<func_t> func{ REL::ID(37810) };
-	return func(actor, a_spell);
-}
-
+using WEAPON_STATE = RE::WEAPON_STATE;
+using ATTACK_STATE = RE::ATTACK_STATE_ENUM;
+using PLAYER_ACTION = RE::PLAYER_ACTION;
 
 bool ValidCastType(RE::PlayerCharacter* player, RE::TESForm* form)
 {
-	if (form->Is(RE::FormType::Spell) ){
-		auto spell = bit_cast<RE::SpellItem*>(form);
-		return IsCasting(player, spell) && (spell->GetDelivery() == RE::MagicSystem::Delivery::kAimed);
+	if (form && form->Is(RE::FormType::Spell)) {
+		auto spell = static_cast<RE::SpellItem*>(form);
+		return IsCasting(player, spell) && (spell->GetDelivery() == RE::MagicSystem::Delivery::kAimed) && (spell->GetCastingType() != RE::MagicSystem::CastingType::kConcentration);
 	}
 	return false;
 }
 
+bool ValidAttackType(RE::PlayerCharacter* player)
+{
+	auto attackState = player->actorState1.meleeAttackState;
+	return attackState == ATTACK_STATE::kBowAttached || attackState == ATTACK_STATE::kBowDrawn;
+}
 
 void HUDManager::UpdateHUD(RE::PlayerCharacter* player, float delta)
 {
-	auto attackState = player->actorState1.meleeAttackState;
 	auto pickData = RE::CrosshairPickData::GetSingleton()->target;
 
-	auto left = player->GetEquippedObject(true);
-	auto right = player->GetEquippedObject(false);
+	auto leftHand = player->GetEquippedObject(true);
+	auto rightHand = player->GetEquippedObject(false);
 
-	bool isVisible = 
-		pickData || 
-		ValidCastType(player, left) || 
-		ValidCastType(player, right) || 
-		attackState == ATTACK_STATE::kBowAttached || 
-		attackState == ATTACK_STATE::kBowDrawn;
+	auto isVisible = pickData || ValidAttackType(player) || ValidCastType(player, leftHand) || ValidCastType(player, rightHand);
 
-	auto crosshair = GetGFxValue("_root.HUDMovieBaseInstance.CrosshairInstance");
-	if (crosshair != nullptr) {
-		RE::GFxValue::DisplayInfo displayInfo;
-		crosshair.GetDisplayInfo(addressof(displayInfo));
-
-		if (isVisible) {
-			alpha += delta * (maxOpacity / fadeSpeed);
-		} else {
-			alpha -= delta * (maxOpacity / fadeSpeed) * 3;
-		}
-		alpha = clamp(alpha, 0.0, maxOpacity);
-
-		displayInfo.SetAlpha(alpha);
-		crosshair.SetDisplayInfo(displayInfo);
+	if (isVisible) {
+		alpha += delta * (maxOpacity / fadeSpeed);
+	} else {
+		alpha -= delta * (maxOpacity / fadeSpeed) * 3;
 	}
+	alpha = clamp(alpha, 0.0, maxOpacity);
+
+	auto crosshairInstance = GetGFxValue("_root.HUDMovieBaseInstance.CrosshairInstance");
+	if (crosshairInstance != nullptr) {
+		RE::GFxValue::DisplayInfo displayInfo;
+		crosshairInstance.GetDisplayInfo(addressof(displayInfo));
+		displayInfo.SetAlpha(alpha);
+		crosshairInstance.SetDisplayInfo(displayInfo);
+	}
+
+	auto crosshairAlert = GetGFxValue("_root.HUDMovieBaseInstance.CrosshairAlert");
+	if (crosshairAlert != nullptr) {
+		RE::GFxValue::DisplayInfo displayInfo;
+		crosshairAlert.GetDisplayInfo(addressof(displayInfo));
+		displayInfo.SetAlpha(alpha);
+		crosshairAlert.SetDisplayInfo(displayInfo);
+	}
+
+	prevDelta = delta;
+}
+
+void HUDManager::UpdateStealthAnim(RE::PlayerCharacter* player, RE::GFxValue sneakAnim, double detectionLevel)
+{
+	auto isVisible = player->IsSneaking();
+
+	if (isVisible) {
+		sneakAlpha = lerp(clamp(detectionLevel + alpha, 0.0, maxOpacity), sneakAlpha, prevDelta / fadeSpeed);
+	} else {
+		sneakAlpha -= prevDelta * (maxOpacity / fadeSpeed) * 3;
+	}
+	sneakAlpha = clamp(sneakAlpha, 0.0, maxOpacity);
+
+	RE::GFxValue::DisplayInfo displayInfo;
+	sneakAnim.GetDisplayInfo(addressof(displayInfo));
+	displayInfo.SetAlpha(sneakAlpha);
+	sneakAnim.SetDisplayInfo(displayInfo);
 }
