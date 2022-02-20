@@ -16,9 +16,8 @@ using namespace std;
 	return object;
 }
 
-using WEAPON_STATE = RE::WEAPON_STATE;
-using ATTACK_STATE = RE::ATTACK_STATE_ENUM;
-using PLAYER_ACTION = RE::PLAYER_ACTION;
+
+
 
 bool ValidCastType(RE::PlayerCharacter* player, RE::TESForm* form)
 {
@@ -29,13 +28,16 @@ bool ValidCastType(RE::PlayerCharacter* player, RE::TESForm* form)
 	return false;
 }
 
+using ATTACK_STATE = RE::ATTACK_STATE_ENUM;
+
 bool ValidAttackType(RE::PlayerCharacter* player)
 {
+
 	auto attackState = player->actorState1.meleeAttackState;
 	return attackState == ATTACK_STATE::kBowAttached || attackState == ATTACK_STATE::kBowDrawn;
 }
 
-void HUDManager::UpdateHUD(RE::PlayerCharacter* player, float delta)
+void HUDManager::UpdateCrosshair(RE::PlayerCharacter* player)
 {
 	auto pickData = RE::CrosshairPickData::GetSingleton()->target;
 
@@ -45,9 +47,9 @@ void HUDManager::UpdateHUD(RE::PlayerCharacter* player, float delta)
 	auto isVisible = pickData || ValidAttackType(player) || ValidCastType(player, leftHand) || ValidCastType(player, rightHand);
 
 	if (isVisible) {
-		alpha += delta * (maxOpacity / fadeSpeed);
+		alpha += prevDelta * (maxOpacity / fadeSpeed);
 	} else {
-		alpha -= delta * (maxOpacity / fadeSpeed) * 3;
+		alpha -= prevDelta * (maxOpacity / fadeSpeed) * 3;
 	}
 	alpha = clamp(alpha, 0.0, maxOpacity);
 
@@ -66,8 +68,6 @@ void HUDManager::UpdateHUD(RE::PlayerCharacter* player, float delta)
 		displayInfo.SetAlpha(alpha);
 		crosshairAlert.SetDisplayInfo(displayInfo);
 	}
-
-	prevDelta = delta;
 }
 
 void HUDManager::UpdateStealthAnim(RE::PlayerCharacter* player, RE::GFxValue sneakAnim, double detectionLevel)
@@ -85,4 +85,10 @@ void HUDManager::UpdateStealthAnim(RE::PlayerCharacter* player, RE::GFxValue sne
 	sneakAnim.GetDisplayInfo(addressof(displayInfo));
 	displayInfo.SetAlpha(sneakAlpha);
 	sneakAnim.SetDisplayInfo(displayInfo);
+}
+
+void HUDManager::UpdateHUD(RE::PlayerCharacter* player, RE::GFxValue sneakAnim, double detectionLevel) 
+{
+	UpdateCrosshair(player);
+	UpdateStealthAnim(player, sneakAnim, detectionLevel);
 }

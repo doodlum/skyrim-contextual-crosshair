@@ -15,8 +15,9 @@ public:
 		Hooks::Install();
 	}
 
-	void UpdateHUD(RE::PlayerCharacter* player, float delta);
+	void UpdateCrosshair(RE::PlayerCharacter* player);
 	void UpdateStealthAnim(RE::PlayerCharacter* player, RE::GFxValue stealthAnim, double detectionLevel);
+	void UpdateHUD(RE::PlayerCharacter* player, RE::GFxValue stealthAnim, double detectionLevel);
 
 	static inline double maxOpacity = 100;
 	static inline double fadeSpeed = 1.0; // seconds
@@ -33,10 +34,8 @@ protected:
 			static void thunk(RE::PlayerCharacter* player, float delta)
 			{
 				func(player, delta);
-	
-				SKSE::GetTaskInterface()->AddUITask([player, delta]() {
-					GetSingleton()->UpdateHUD(player, delta);
-				});
+
+				prevDelta = delta;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
@@ -51,10 +50,9 @@ protected:
 				auto stealthCrosshair = a1->sneakAnim;
 
 				auto player = RE::PlayerCharacter::GetSingleton();
-
 				if (player) {
 					SKSE::GetTaskInterface()->AddUITask([player, stealthCrosshair, detectionLevel]() {
-						GetSingleton()->UpdateStealthAnim(player, stealthCrosshair, detectionLevel);
+						GetSingleton()->UpdateHUD(player, stealthCrosshair, detectionLevel);
 					});
 				}
 				return result;
