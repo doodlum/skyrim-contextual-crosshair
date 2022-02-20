@@ -117,7 +117,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
 
 			"$<$<CONFIG:DEBUG>:>"
-			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
+			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC->"
 	)
 
 	target_link_options(

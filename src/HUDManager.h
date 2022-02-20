@@ -4,6 +4,17 @@ class HUDManager
 {
 public:
 
+	double maxOpacity = 100;
+	double fadeSpeed = 1.0;  // seconds
+
+	double alpha = 0.0;
+	double sneakAlpha = 0.0;
+	double compassAlpha = 0.0;
+
+	double prevDelta = 0.0;
+
+	double fadeMult = 1.0;
+	
 	[[nodiscard]] static HUDManager* GetSingleton()
 	{
 		static HUDManager singleton;
@@ -15,15 +26,13 @@ public:
 		Hooks::Install();
 	}
 
-	void UpdateCrosshair(RE::PlayerCharacter* player);
-	void UpdateStealthAnim(RE::PlayerCharacter* player, RE::GFxValue stealthAnim, double detectionLevel);
-	void UpdateHUD(RE::PlayerCharacter* player, RE::GFxValue stealthAnim, double detectionLevel);
+	bool ValidCastType(RE::ActorMagicCaster* magicCaster);
+	bool ValidAttackType(RE::PlayerCharacter* player);
 
-	static inline double maxOpacity = 100;
-	static inline double fadeSpeed = 1.0; // seconds
-	static inline double alpha = 0.0;
-	static inline double sneakAlpha = 0.0;
-	static inline double prevDelta = 0.0;
+	void UpdateCrosshair();
+	void UpdateStealthAnim(RE::GFxValue sneakAnim);
+	void UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim);
+
 
 protected:
 
@@ -34,8 +43,8 @@ protected:
 			static void thunk(RE::PlayerCharacter* player, float delta)
 			{
 				func(player, delta);
-
-				prevDelta = delta;
+				auto manager = GetSingleton();
+				manager->prevDelta = delta;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
@@ -47,12 +56,12 @@ protected:
 				auto result = func(a1, a2, a3, a4);
 
 				auto detectionLevel = static_cast<double>(a1->unk88);
-				auto stealthCrosshair = a1->sneakAnim;
+				auto sneakAnim = a1->sneakAnim;
 
 				auto player = RE::PlayerCharacter::GetSingleton();
 				if (player) {
-					SKSE::GetTaskInterface()->AddUITask([player, stealthCrosshair, detectionLevel]() {
-						GetSingleton()->UpdateHUD(player, stealthCrosshair, detectionLevel);
+					SKSE::GetTaskInterface()->AddUITask([player, detectionLevel, sneakAnim]() {
+						GetSingleton()->UpdateHUD(player, detectionLevel, sneakAnim);
 					});
 				}
 				return result;
@@ -62,7 +71,6 @@ protected:
 
 		static void Install()
 		{
-			auto hehptr = RE::VTABLE_StealthMeter[0];
 			stl::write_vfunc<RE::PlayerCharacter, 0xAD, PlayerCharacter_Update>();
 			stl::write_vfunc<0x1, StealthMeter_Update>(RE::VTABLE_StealthMeter[0]);
 		}
@@ -78,4 +86,6 @@ private:
 
 	HUDManager& operator=(const HUDManager&) = delete;
 	HUDManager& operator=(HUDManager&&) = delete;
+
+
 };
