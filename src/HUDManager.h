@@ -10,6 +10,7 @@ public:
 	double fadeSpeed = 1.0;  // seconds
 
 	bool visible = true;
+
 	double alpha = 0.0;
 	double sneakAlpha = 0.0;
 	double compassAlpha = 0.0;
@@ -17,6 +18,7 @@ public:
 	double prevDelta = 0.0;
 
 	double fadeMult = 1.0;
+	double prevFadeMult = 0.0;
 	
 	[[nodiscard]] static HUDManager* GetSingleton()
 	{
@@ -29,6 +31,7 @@ public:
 		Hooks::Install();
 	}
 
+	bool ValidPickType();
 	bool ValidCastType(RE::ActorMagicCaster* magicCaster);
 	bool ValidAttackType(RE::PlayerCharacter* player);
 
