@@ -17,6 +17,4 @@ xcopy "build\post-ae\release\*.dll" "dist\post-ae\SKSE\Plugins\" /I /Y
 
 xcopy "package" "dist" /I /Y /E
 
-cd dist
-powershell Compress-Archive -Force -Path * -DestinationPath "ConditionalHUD-FOMOD.zip"
 pause

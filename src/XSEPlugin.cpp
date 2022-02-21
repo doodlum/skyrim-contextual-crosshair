@@ -9,7 +9,10 @@ void SKSEMessageHandler(SKSE::MessagingInterface::Message* msg)
 		if (dataHandler->LookupLoadedModByName("SmoothCam.esp")) {
 			auto hudManager = HUDManager::GetSingleton();
 			hudManager->SmoothCamInstalled = true;
-		};
+			logger::info("SmoothCam support enabled");
+		} else {
+			logger::info("SmoothCam support not enabled");
+		}
 	}
 }
 
