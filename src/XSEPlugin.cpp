@@ -1,9 +1,22 @@
 
 #include "Hooks.h"
+#include "HUDManager.h"
+
+void SKSEMessageHandler(SKSE::MessagingInterface::Message* msg)
+{
+	if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
+		auto dataHandler = RE::TESDataHandler::GetSingleton();
+		if (dataHandler->LookupLoadedModByName("SmoothCam.esp")) {
+			auto hudManager = HUDManager::GetSingleton();
+			hudManager->SmoothCamInstalled = true;
+		};
+	}
+}
 
 void Init()
 {
 	Hooks::Install();
+	SKSE::GetMessagingInterface()->RegisterListener(SKSEMessageHandler);
 }
 
 void InitializeLog()

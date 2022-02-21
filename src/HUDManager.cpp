@@ -47,7 +47,7 @@ void HUDManager::UpdateCrosshair()
 	if (crosshairInstance != nullptr) {
 		RE::GFxValue::DisplayInfo displayInfo;
 		crosshairInstance.GetDisplayInfo(std::addressof(displayInfo));
-		displayInfo.SetAlpha(alpha);
+		displayInfo.SetAlpha(visible ? alpha : 0.0);
 		crosshairInstance.SetDisplayInfo(displayInfo);
 	}
 
@@ -55,7 +55,7 @@ void HUDManager::UpdateCrosshair()
 	if (crosshairAlert != nullptr) {
 		RE::GFxValue::DisplayInfo displayInfo;
 		crosshairAlert.GetDisplayInfo(std::addressof(displayInfo));
-		displayInfo.SetAlpha(alpha);
+		displayInfo.SetAlpha(visible ? alpha : 0.0);
 		crosshairAlert.SetDisplayInfo(displayInfo);
 	}
 }
@@ -70,26 +70,34 @@ void HUDManager::UpdateStealthAnim(RE::GFxValue sneakAnim)
 
 void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim)
 {
+	if (SmoothCamInstalled) {
+		auto camera = RE::PlayerCamera::GetSingleton();
+		camera->lock.Lock();
+		visible = camera->currentState != camera->cameraStates[RE::CameraState::kThirdPerson];
+		camera->lock.Unlock();
+	}
+
 	fadeMult = 1.0;
 
 	auto pickData = RE::CrosshairPickData::GetSingleton()->target;
 
-	auto isVisible = pickData || ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player);
+	auto fadeIn = (pickData || ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player));
 
-	if (isVisible) {
+	if (fadeIn) {
 		alpha = std::lerp(alpha, maxOpacity, prevDelta / fadeSpeed * fadeMult);
 	} else {
 		fadeMult *= 3;
 		alpha = std::lerp(alpha, 0, prevDelta / fadeSpeed * fadeMult);
 	}
-	alpha = std::clamp(alpha, 0.0, maxOpacity);
+	alpha = std::clamp(alpha, 0.0, visible ? maxOpacity : maxOpacity / 2);
+
 
 	if (player->IsSneaking()) {
 		sneakAlpha = std::lerp(sneakAlpha, std::clamp(detectionLevel + alpha, 0.0, maxOpacity), prevDelta / fadeSpeed * fadeMult);
 	} else {
 		sneakAlpha = std::lerp(sneakAlpha, 0, prevDelta / fadeSpeed * 16);
 	}
-	sneakAlpha = std::clamp(sneakAlpha, 0.0, maxOpacity);
+	sneakAlpha = std::clamp(sneakAlpha, 0.0, visible ? maxOpacity : maxOpacity / 2);
 
 	UpdateCrosshair();
 	UpdateStealthAnim(sneakAnim);

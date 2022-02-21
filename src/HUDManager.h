@@ -4,9 +4,12 @@ class HUDManager
 {
 public:
 
+	bool SmoothCamInstalled = false;
+
 	double maxOpacity = 100;
 	double fadeSpeed = 1.0;  // seconds
 
+	bool visible = true;
 	double alpha = 0.0;
 	double sneakAlpha = 0.0;
 	double compassAlpha = 0.0;
