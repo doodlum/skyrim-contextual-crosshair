@@ -1,13 +1,22 @@
 #pragma once
 
+#define SMOOTHCAM_API_COMMONLIB
+#include "API/SmoothCamAPI.h"
+
+#define TDM_API_COMMONLIB
+#include "API/TrueDirectionalMovementAPI.h"
+
 class HUDManager
 {
 public:
 
-	bool SmoothCamInstalled = false;
+	SmoothCamAPI::IVSmoothCam3* g_SmoothCam = nullptr;
+	TDM_API::IVTDM1*            g_TDM = nullptr;
+	HMODULE						g_DetectionMeter = nullptr;
 
-	double maxOpacity = 100;
-	double fadeSpeed = 1.0;  // seconds
+	bool TDMCompat();
+	bool SmoothCamCompat();
+	bool DetectionMeterCompat();
 
 	bool visible = true;
 

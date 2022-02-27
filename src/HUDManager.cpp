@@ -1,5 +1,24 @@
 #include "HUDManager.h"
 
+bool HUDManager::TDMCompat()
+{
+	return g_TDM && g_TDM->GetTargetLockState();
+}
+
+bool HUDManager::SmoothCamCompat()
+{
+	if (g_SmoothCam && g_SmoothCam->IsCameraEnabled())
+		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
+			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
+	return false;
+}
+
+bool HUDManager::DetectionMeterCompat()
+{
+	return g_DetectionMeter;
+}
+
+
 [[nodiscard]] RE::GFxValue GetGFxValue(const char* a_pathToVar)
 {
 	RE::GFxValue object;
@@ -12,6 +31,7 @@
 
 	return object;
 }
+
 
 void HUDManager::UpdateCrosshair()
 {
@@ -31,6 +51,7 @@ void HUDManager::UpdateCrosshair()
 		crosshairAlert.SetDisplayInfo(displayInfo);
 	}
 }
+
 
 void HUDManager::UpdateStealthAnim(RE::GFxValue sneakAnim)
 {
@@ -67,47 +88,37 @@ bool HUDManager::ValidAttackType(RE::PlayerCharacter* player)
 	return false;
 }
 
+
 bool HUDManager::ValidPickType()
 {
-	auto CrosshairPickData = RE::CrosshairPickData::GetSingleton();
-	auto refr = CrosshairPickData ? CrosshairPickData->target.get() : nullptr;
-
-	return refr && refr->GetFormType() != RE::FormType::ActorCharacter;
+	if (auto CrosshairPickData = RE::CrosshairPickData::GetSingleton(); CrosshairPickData)
+		if (auto refr = CrosshairPickData->target.get(); refr)
+			return refr->GetFormType() != RE::FormType::ActorCharacter || refr.get()->As<RE::Actor>()->IsDead();
+	return false;
 }
 
 void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim)
 {
-	if (SmoothCamInstalled) {
-		auto camera = RE::PlayerCamera::GetSingleton();
-		camera->lock.Lock();
-		visible = camera->currentState != camera->cameraStates[RE::CameraState::kThirdPerson];
-		camera->lock.Unlock();
-	}
+	auto SmoothCam = SmoothCamCompat();
+	auto TDM = TDMCompat();
+	auto DetectionMeter = DetectionMeterCompat();
 
 	fadeMult = 1.0;
 
 	bool lookingAtValidRef = ValidPickType();
 
-	auto fadeIn = lookingAtValidRef || ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player);
-	auto fadeDelta = prevDelta / fadeSpeed;
+	auto fadeIn = !(SmoothCam ||  TDM) && (ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player));
 	
-	fadeMult = std::lerp(prevFadeMult, fadeIn && !lookingAtValidRef ? fadeMult : fadeMult * 8, fadeDelta / fadeMult);
+	fadeMult = std::lerp(prevFadeMult, fadeIn ? fadeMult : fadeMult * 8, prevDelta / fadeMult);
 	prevFadeMult = fadeMult;
 
-	if (fadeIn) {
-		alpha = std::lerp(alpha, maxOpacity, fadeDelta * fadeMult);
-	} else {
-		alpha = std::lerp(alpha, 0, fadeDelta * fadeMult);
-	}
-	alpha = std::clamp(alpha, 0.0, visible && !lookingAtValidRef ? maxOpacity : maxOpacity / 2);
-
+	alpha = std::lerp(alpha, (fadeIn || lookingAtValidRef) ? (!TDM && (fadeIn || SmoothCam) ? 100.0 : 50.0) : 0.0, prevDelta * fadeMult);
 
 	if (player->IsSneaking()) {
-		sneakAlpha = std::lerp(sneakAlpha, std::clamp(detectionLevel + alpha, 0.0, maxOpacity), fadeDelta * fadeMult);
+		sneakAlpha = std::lerp(sneakAlpha, !(SmoothCam || TDM) ? std::clamp(DetectionMeter ? alpha : detectionLevel + alpha, 0.0, 100.0) : DetectionMeterCompat() ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
 	} else {
-		sneakAlpha = std::lerp(sneakAlpha, 0, fadeDelta * 16);
+		sneakAlpha = std::lerp(sneakAlpha, 0.0, prevDelta * 16);
 	}
-	sneakAlpha = std::clamp(sneakAlpha, 0.0, visible ? maxOpacity : maxOpacity / 2);
 
 	UpdateCrosshair();
 	UpdateStealthAnim(sneakAnim);
