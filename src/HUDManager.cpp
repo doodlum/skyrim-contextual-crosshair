@@ -18,6 +18,13 @@ bool HUDManager::DetectionMeterCompat()
 	return g_DetectionMeter;
 }
 
+bool HUDManager::BTPSCompat()
+{
+	if (g_BTPS)
+		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
+			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
+	return g_BTPS;
+}
 
 [[nodiscard]] RE::GFxValue GetGFxValue(const char* a_pathToVar)
 {
@@ -102,20 +109,19 @@ void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, R
 	auto SmoothCam = SmoothCamCompat();
 	auto TDM = TDMCompat();
 	auto DetectionMeter = DetectionMeterCompat();
+	auto BTPS = BTPSCompat();
 
 	fadeMult = 1.0;
 
-	bool lookingAtValidRef = ValidPickType();
-
-	auto fadeIn = !(SmoothCam ||  TDM) && (ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player));
+	auto fadeIn = !(SmoothCam || TDM) && (ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player));
 	
 	fadeMult = std::lerp(prevFadeMult, fadeIn ? fadeMult : fadeMult * 8, prevDelta / fadeMult);
 	prevFadeMult = fadeMult;
 
-	alpha = std::lerp(alpha, (fadeIn || lookingAtValidRef) ? (!TDM && (fadeIn || SmoothCam) ? 100.0 : 50.0) : 0.0, prevDelta * fadeMult);
+	alpha = std::lerp(alpha, (fadeIn || (ValidPickType() && !BTPS)) ? (!TDM && (fadeIn || SmoothCam) ? 100.0 : 50.0) : 0.0, prevDelta * fadeMult);
 
 	if (player->IsSneaking()) {
-		sneakAlpha = std::lerp(sneakAlpha, !(SmoothCam || TDM) ? std::clamp(DetectionMeter ? alpha : detectionLevel + alpha, 0.0, 100.0) : DetectionMeterCompat() ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
+		sneakAlpha = std::lerp(sneakAlpha, !(SmoothCam || TDM) ? std::clamp(DetectionMeter ? alpha : detectionLevel + alpha, 0.0, 100.0) : DetectionMeter ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
 	} else {
 		sneakAlpha = std::lerp(sneakAlpha, 0.0, prevDelta * 16);
 	}

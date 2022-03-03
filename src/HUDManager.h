@@ -13,10 +13,12 @@ public:
 	SmoothCamAPI::IVSmoothCam3* g_SmoothCam = nullptr;
 	TDM_API::IVTDM1*            g_TDM = nullptr;
 	HMODULE						g_DetectionMeter = nullptr;
+	HMODULE                     g_BTPS = nullptr;
 
 	bool TDMCompat();
 	bool SmoothCamCompat();
 	bool DetectionMeterCompat();
+	bool BTPSCompat();
 
 	bool visible = true;
 

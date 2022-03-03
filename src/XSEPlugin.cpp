@@ -35,6 +35,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			else
 				logger::info("Unable to acquire Detection Meter DLL");
 
+			if (HUDManager::GetSingleton()->g_BTPS = LoadLibrary(".\\Data\\SKSE\\Plugins\\BetterThirdPersonSelection.dll"))
+				logger::info("Obtained BTPS DLL");
+			else
+				logger::info("Unable to acquire BTPS DLL");
+
 			break;
 
 		case SKSE::MessagingInterface::kPostPostLoad:
