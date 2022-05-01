@@ -9,48 +9,28 @@ if(BUILD_SKYRIMSE)
 	add_compile_definitions(SKYRIMSE)
 	set(CommonLibName "CommonLibSSE")
 	set(CommonLibPath "external/CommonLibSSE")
-	set(GamePath ${SkyrimVRPath})
 	set(GameVersion "Skyrim VR")
 elseif(BUILD_SKYRIMAE)
 	add_compile_definitions(SKYRIMAE)
 	set(CommonLibPath "external/CommonLibAE")
 	set(CommonLibName "CommonLibSSE")
-	set(GamePath ${SkyrimVRPath})
 	set(GameVersion "Skyrim VR")
 elseif(BUILD_SKYRIMVR)
 	add_compile_definitions(SKYRIMVR)
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 	set(CommonLibName "CommonLibVR")
 	set(CommonLibPath "external/CommonLibVR")
-	set(GamePath ${SkyrimVRPath})
 	set(GameVersion "Skyrim VR")
 elseif(BUILD_FALLOUT4)
 	add_compile_definitions(FALLOUT4)
 	set(CommonLibPath "CommonLibF4/CommonLibF4")
 	set(CommonLibName "external/CommonLibF4")
-	set(GamePath ${SkyrimVRPath})
 	set(GameVersion "Fallout 4")
 else()
 message(
 FATAL_ERROR
 	"A game must be selected."
 )
-endif()
-
-if (NOT BUILD_DEBUG)
-	add_compile_definitions(NDEBUG)
-endif()
-
-get_filename_component(
-	Skyrim64Path
-	"[HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Bethesda Softworks\\Skyrim Special Edition;installed path]"
-	ABSOLUTE CACHE
-)
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "${Skyrim64Path}/Data" CACHE PATH
-		"Install path prefix (e.g. Skyrim Data directory or Mod Organizer virtual directory)."
-		FORCE)
 endif()
 
 add_library("${PROJECT_NAME}" SHARED)
@@ -103,28 +83,53 @@ target_include_directories(
 )
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-	option(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD "Include INSTALL target to default build." OFF)
+
+	target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
+
+	set(SC_RELEASE_OPTS "/Zi;/fp:fast;/GL;/Gy-;/Gm-;/Gw;/sdl-;/GS-;/guard:cf-;/O2;/Ob2;/Oi;/Ot;/Oy;/fp:except-")	
+	
 	target_compile_options(
 		"${PROJECT_NAME}"
 		PRIVATE
-			"/sdl"	# Enable Additional Security Checks
-			"/utf-8"	# Set Source and Executable character sets to UTF-8
-			"/Zi"	# Debug Information Format
-
-			"/permissive-"	# Standards conformance
-			"/Zc:preprocessor"	# Enable preprocessor conformance mode
-
-			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
-
-			"$<$<CONFIG:DEBUG>:>"
-			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC->"
+			/MP
+			/await
+			/W4
+			/WX
+			/permissive-
+			/Zc:alignedNew
+			/Zc:auto
+			/Zc:__cplusplus
+			/Zc:externC
+			/Zc:externConstexpr
+			/Zc:forScope
+			/Zc:hiddenFriend
+			/Zc:implicitNoexcept
+			/Zc:lambda
+			/Zc:noexceptTypes
+			/Zc:preprocessor
+			/Zc:referenceBinding
+			/Zc:rvalueCast
+			/Zc:sizedDealloc
+			/Zc:strictStrings
+			/Zc:ternary
+			/Zc:threadSafeInit
+			/Zc:trigraphs
+			/Zc:wchar_t
+			/wd4200 # nonstandard extension used : zero-sized array in struct/union
 	)
 
+	target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/fp:strict>")
+	target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/ZI>")
+	target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/Od>")
+	target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/Gy>")
+	target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:${SC_RELEASE_OPTS}>")
+
 	target_link_options(
-		"${PROJECT_NAME}"
+		${PROJECT_NAME}
 		PRIVATE
+			/WX
 			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
-			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
+			"$<$<CONFIG:RELEASE>:/LTCG;/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
 endif()
 
