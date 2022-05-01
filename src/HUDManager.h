@@ -6,14 +6,16 @@
 #define TDM_API_COMMONLIB
 #include "API/TrueDirectionalMovementAPI.h"
 
+#include "API/BTPS_API_decl.h"
+
 class HUDManager
 {
 public:
 
 	SmoothCamAPI::IVSmoothCam3* g_SmoothCam = nullptr;
-	TDM_API::IVTDM1*            g_TDM = nullptr;
+	TDM_API::IVTDM2*            g_TDM = nullptr;
+	BTPS_API_decl::API_V0*      g_BTPS = nullptr;
 	HMODULE						g_DetectionMeter = nullptr;
-	HMODULE                     g_BTPS = nullptr;
 
 	bool TDMCompat();
 	bool SmoothCamCompat();

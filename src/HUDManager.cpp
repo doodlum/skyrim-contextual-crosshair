@@ -20,10 +20,7 @@ bool HUDManager::DetectionMeterCompat()
 
 bool HUDManager::BTPSCompat()
 {
-	if (g_BTPS)
-		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
-			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
-	return g_BTPS;
+	return g_BTPS && g_BTPS->GetWidget3DEnabled();
 }
 
 [[nodiscard]] RE::GFxValue GetGFxValue(const char* a_pathToVar)

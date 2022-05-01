@@ -10,47 +10,39 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 					[](void* interfaceInstance, SmoothCamAPI::InterfaceVersion interfaceVersion) {
 						if (interfaceVersion == SmoothCamAPI::InterfaceVersion::V3) {
 							HUDManager::GetSingleton()->g_SmoothCam = reinterpret_cast<SmoothCamAPI::IVSmoothCam3*>(interfaceInstance);
-							logger::info("Obtained SmoothCamAPI");
+							logger::info("Obtained SmoothCam API");
 						} else {
-							logger::error("Unable to acquire requested SmoothCamAPI interface version");
+							logger::error("Unable to acquire requested SmoothCam API interface version");
 						}
 					})) {
 				logger::warn("SmoothCamAPI::RegisterInterfaceLoaderCallback reported an error");
 			}
 
-			if (!TDM_API::RegisterInterfaceLoaderCallback(SKSE::GetMessagingInterface(),
-					[](void* interfaceInstance, TDM_API::InterfaceVersion interfaceVersion) {
-						if (interfaceVersion == TDM_API::InterfaceVersion::V1) {
-							HUDManager::GetSingleton()->g_TDM = reinterpret_cast<TDM_API::IVTDM1*>(interfaceInstance);
-							logger::info("Obtained TDM API");
-						} else {
-							logger::error("Unable to acquire requested TDM API interface version");
-						}
-					})) {
-				logger::warn("TDM_API::RegisterInterfaceLoaderCallback reported an error");
-			}
+			HUDManager::GetSingleton()->g_TDM = reinterpret_cast<TDM_API::IVTDM2*>(TDM_API::RequestPluginAPI(TDM_API::InterfaceVersion::V2));
+			if (HUDManager::GetSingleton()->g_TDM) 
+				logger::info("Obtained TDM API");
+			else
+				logger::info("Unable to acquire TDM API");
+
+			HUDManager::GetSingleton()->g_BTPS = reinterpret_cast<BTPS_API_decl::API_V0*>(BTPS_API_decl::RequestPluginAPI_V0());
+			if (HUDManager::GetSingleton()->g_TDM)
+				logger::info("Obtained BTPS API");
+			else
+				logger::info("Unable to acquire BTPS API");
 
 			if (HUDManager::GetSingleton()->g_DetectionMeter = LoadLibrary(".\\Data\\SKSE\\Plugins\\MaxsuDetectionMeter.dll"))
 				logger::info("Obtained Detection Meter DLL");
 			else
 				logger::info("Unable to acquire Detection Meter DLL");
 
-			if (HUDManager::GetSingleton()->g_BTPS = LoadLibrary(".\\Data\\SKSE\\Plugins\\BetterThirdPersonSelection.dll"))
-				logger::info("Obtained BTPS DLL");
-			else
-				logger::info("Unable to acquire BTPS DLL");
-
 			break;
+
 
 		case SKSE::MessagingInterface::kPostPostLoad:
 			if (!SmoothCamAPI::RequestInterface(
 					SKSE::GetMessagingInterface(),
 					SmoothCamAPI::InterfaceVersion::V3))
 				logger::warn("SmoothCamAPI::RequestInterface reported an error");
-			if (!TDM_API::RequestInterface(
-					SKSE::GetMessagingInterface(),
-					TDM_API::InterfaceVersion::V1))
-				logger::warn("TDMAPI::RequestInterface reported an error");
 			break;
 	}
 }
