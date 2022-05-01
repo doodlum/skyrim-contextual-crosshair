@@ -1,6 +1,7 @@
 #pragma once
-//#undef NDEBUG
+
 #pragma warning(push)
+#pragma warning(disable: 5105)
 #if defined(FALLOUT4)
 #include "RE/Fallout.h"
 #include "F4SE/F4SE.h"
@@ -22,6 +23,7 @@
 #endif
 
 #include <shared_mutex>
+
 
 #ifdef NDEBUG
 #include <spdlog/sinks/basic_file_sink.h>
