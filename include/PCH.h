@@ -21,14 +21,15 @@
 #endif
 #endif
 
+#include <shared_mutex>
+
 #ifdef NDEBUG
 #include <spdlog/sinks/basic_file_sink.h>
 #else
 #include <spdlog/sinks/msvc_sink.h>
 #endif
-#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
-#include <Windows.h>
 
+#include <SimpleIni.h>
 #pragma warning(pop)
 
 using namespace std::literals;

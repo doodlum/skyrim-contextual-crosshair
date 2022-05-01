@@ -2,6 +2,8 @@
 #include "Hooks.h"
 #include "HUDManager.h"
 
+#include "Settings.cpp"
+
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
@@ -25,12 +27,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 				logger::info("Unable to acquire TDM API");
 
 			HUDManager::GetSingleton()->g_BTPS = reinterpret_cast<BTPS_API_decl::API_V0*>(BTPS_API_decl::RequestPluginAPI_V0());
-			if (HUDManager::GetSingleton()->g_TDM)
+			if (HUDManager::GetSingleton()->g_BTPS)
 				logger::info("Obtained BTPS API");
 			else
 				logger::info("Unable to acquire BTPS API");
 
-			if (HUDManager::GetSingleton()->g_DetectionMeter = LoadLibrary(".\\Data\\SKSE\\Plugins\\MaxsuDetectionMeter.dll"))
+			if (HUDManager::GetSingleton()->g_DetectionMeter = LoadLibrary(L"Data/SKSE/Plugins/MaxsuDetectionMeter.dll"))
 				logger::info("Obtained Detection Meter DLL");
 			else
 				logger::info("Unable to acquire Detection Meter DLL");
@@ -52,6 +54,7 @@ void Init()
 {
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 	Hooks::Install();
+	Settings::GetSingleton()->LoadSettings();
 }
 
 void InitializeLog()

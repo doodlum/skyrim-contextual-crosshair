@@ -1,5 +1,3 @@
-option(BUILD_DEBUG "Enable debugging options" OFF)
-
 option(BUILD_SKYRIMSE "Build for Skyrim pre-AE" OFF)
 option(BUILD_SKYRIMAE "Build for Skyrim post-AE" OFF)
 option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
@@ -27,10 +25,10 @@ elseif(BUILD_FALLOUT4)
 	set(CommonLibName "external/CommonLibF4")
 	set(GameVersion "Fallout 4")
 else()
-message(
-FATAL_ERROR
-	"A game must be selected."
-)
+	message(
+	FATAL_ERROR
+		"A game must be selected."
+	)
 endif()
 
 add_library("${PROJECT_NAME}" SHARED)
@@ -73,6 +71,8 @@ target_precompile_headers(
 		include/PCH.h
 )
 
+find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+
 target_include_directories(
 	"${PROJECT_NAME}"
 	PUBLIC
@@ -80,9 +80,17 @@ target_include_directories(
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}/cmake
 		${CMAKE_CURRENT_SOURCE_DIR}/src
+		${SIMPLEINI_INCLUDE_DIRS}
 )
 
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
+
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_RUNTIME ON)
+
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	add_compile_definitions(_UNICODE)
 
 	target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
