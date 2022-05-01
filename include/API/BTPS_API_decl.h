@@ -34,7 +34,7 @@ private:
 private:
     static [[nodiscard]] inline void* RequestPluginAPI(const Version apiVersion = Version::V0)
     {
-        HMODULE pluginHandle = GetModuleHandle(pluginName);
+        HMODULE pluginHandle = GetModuleHandleA(pluginName);
         if (!pluginHandle)
             return nullptr;
 
