@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Settings.cpp"
+
 #define SMOOTHCAM_API_COMMONLIB
 #include "API/SmoothCamAPI.h"
 
@@ -21,8 +23,6 @@ public:
 	bool SmoothCamCompat();
 	bool DetectionMeterCompat();
 	bool BTPSCompat();
-
-	bool visible = true;
 
 	double alpha = 0.0;
 	double sneakAlpha = 0.0;
@@ -47,8 +47,10 @@ public:
 	bool ValidPickType();
 	bool ValidCastType(RE::ActorMagicCaster* magicCaster);
 	bool ValidAttackType(RE::PlayerCharacter* player);
+	bool ValidDrawnState(RE::PlayerCharacter* player);
+	bool ValidSpellType(RE::MagicItem* magicItem);
 
-	void UpdateCrosshair();
+	void UpdateCrosshair(double modAlpha);
 	void UpdateStealthAnim(RE::GFxValue sneakAnim);
 	void UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim);
 

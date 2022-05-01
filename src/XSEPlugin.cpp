@@ -46,6 +46,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 					SmoothCamAPI::InterfaceVersion::V3))
 				logger::warn("SmoothCamAPI::RequestInterface reported an error");
 			break;
+
+		case SKSE::MessagingInterface::kPreLoadGame:
+			Settings::GetSingleton()->LoadSettings();
+			break;
+
 	}
 }
 

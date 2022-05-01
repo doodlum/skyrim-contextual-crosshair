@@ -5,6 +5,7 @@
     "boost-stl-interfaces",
     "fmt",
     "rsm-binary-io",
+    "simpleini",
     "spdlog"
   ],
   "builtin-baseline": "7e7dad5fe20cdc085731343e0e197a7ae655555b",
