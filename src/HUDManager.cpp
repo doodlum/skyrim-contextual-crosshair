@@ -185,7 +185,7 @@ void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, R
 	if (player->IsSneaking()) {
 		if (settings->GetSneakMeterMode()) 
 			detectionLevel = 100.0;
-		sneakAlpha = std::lerp(sneakAlpha, !(SmoothCam || TDM) ? std::clamp(DetectionMeter ? modAlpha : detectionLevel + modAlpha, 0.0, 100.0) : DetectionMeter ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
+		sneakAlpha = std::lerp(sneakAlpha, !((SmoothCam && settings->GetSmoothCamMode() == 0) || TDM) ? std::clamp(DetectionMeter ? modAlpha : detectionLevel + modAlpha, 0.0, 100.0) : DetectionMeter ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
 		sneakAlpha = max(modAlpha, sneakAlpha);
 	} else {
 		sneakAlpha = std::lerp(sneakAlpha, 0.0, prevDelta * 16);
