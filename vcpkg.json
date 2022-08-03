@@ -1,15 +1,23 @@
 {
-  "name": "xseplugin",
-  "version": "1",
-  "dependencies": [
-    "boost-stl-interfaces",
-    "fmt",
-    "rsm-binary-io",
-    "simpleini",
-    "spdlog"
-  ],
-  "builtin-baseline": "7e7dad5fe20cdc085731343e0e197a7ae655555b",
-  "overrides": [
-    { "name": "fmt", "version": "8.0.1" }
-  ]
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "commonlibsse-plugin",
+    "version-string": "1.0.0",
+    "port-version": 0,
+    "description": "SKSE plugin based on CommonLibSSE, for unified AE/SE/VR deployment.",
+    "homepage": "https://www.skyrimng.com",
+    "license": "Apache-2.0",
+    "features": {
+        "plugin": {
+            "description": "Build the SKSE plugin.",
+            "dependencies": [
+                "commonlibsse-ng",
+                "nlohmann-json",
+                "simpleini",
+                "magic-enum"
+            ]
+        }
+    },
+    "default-features": [
+        "plugin"
+    ]
 }

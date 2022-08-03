@@ -61,9 +61,9 @@
 			"toolset": "v143"
 		},
 		{
-			"binaryDir": "${sourceDir}/build/pre-ae",
+			"binaryDir": "${sourceDir}/build/skyrim",
 			"cacheVariables": {
-				"BUILD_SKYRIMSE": true
+				"BUILD_SKYRIM": true
 			},
 			"inherits": [
 				"cmake-dev",
@@ -71,20 +71,7 @@
 				"windows",
 				"vs2022-windows"
 			],
-			"name": "pre-ae"
-		},
-		{
-			"binaryDir": "${sourceDir}/build/post-ae",
-			"cacheVariables": {
-				"BUILD_SKYRIMAE": true
-			},
-			"inherits": [
-				"cmake-dev",
-				"vcpkg",
-				"windows",
-				"vs2022-windows"
-			],
-			"name": "post-ae"
+			"name": "skyrim"
 		},
 		{
 			"binaryDir": "${sourceDir}/build/vr",

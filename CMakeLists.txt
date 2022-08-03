@@ -8,10 +8,4 @@ project(
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(XSEPlugin)
-
-target_link_libraries(
-	"${PROJECT_NAME}"
-	PRIVATE
-		${CommonLibName}::${CommonLibName}
-		spdlog::spdlog
-)
+find_package(binary_io CONFIG REQUIRED)

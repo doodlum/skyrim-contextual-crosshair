@@ -2,36 +2,37 @@
 
 #pragma warning(push)
 #pragma warning(disable: 5105)
+#pragma warning(disable: 4189)
+
 #if defined(FALLOUT4)
-#include "RE/Fallout.h"
-#include "F4SE/F4SE.h"
-#define SKSE F4SE
-#define SKSEAPI F4SEAPI
-#define SKSEPlugin_Load F4SEPlugin_Load
-#define SKSEPlugin_Query F4SEPlugin_Query
-#define RUNTIME RUNTIME_1_10_163
+#	include "F4SE/F4SE.h"
+#	include "RE/Fallout.h"
+#	define SKSE F4SE
+#	define SKSEAPI F4SEAPI
+#	define SKSEPlugin_Load F4SEPlugin_Load
+#	define SKSEPlugin_Query F4SEPlugin_Query
+#	define RUNTIME RUNTIME_1_10_163
 #else
-#include "RE/Skyrim.h"
-#include "SKSE/SKSE.h"
-#if defined(SKYRIMAE)
-#define RUNTIME 0
-#elif defined(SKYRIMVR)
-#define RUNTIME SKSE::RUNTIME_VR_1_4_15_1
-#else
-#define RUNTIME SKSE::RUNTIME_1_5_97
-#endif
+#	include "RE/Skyrim.h"
+#	include "SKSE/SKSE.h"
+#	if defined(SKYRIMAE)
+#		define RUNTIME 0
+#	elif defined(SKYRIMVR)
+#		define RUNTIME SKSE::RUNTIME_VR_1_4_15_1
+#	else
+#		define RUNTIME SKSE::RUNTIME_1_5_97
+#	endif
 #endif
 
-#include <shared_mutex>
-
+#include <ShlObj_core.h>
+#include <Windows.h>
 
 #ifdef NDEBUG
-#include <spdlog/sinks/basic_file_sink.h>
+#	include <spdlog/sinks/basic_file_sink.h>
 #else
-#include <spdlog/sinks/msvc_sink.h>
+#	include <spdlog/sinks/msvc_sink.h>
 #endif
 
-#include <SimpleIni.h>
 #pragma warning(pop)
 
 using namespace std::literals;
@@ -57,7 +58,7 @@ namespace stl
 	}
 
 	template <std::size_t idx, class T>
-	void write_vfunc(REL::ID id)
+	void write_vfunc(REL::VariantID id)
 	{
 		REL::Relocation<std::uintptr_t> vtbl{ id };
 		T::func = vtbl.write_vfunc(idx, T::thunk);

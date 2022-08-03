@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SimpleIni.h"
+
 class Settings
 {
 public:
@@ -29,11 +31,17 @@ public:
 		double max{ 100.00 };
 	};
 
+	struct SmoothCam
+	{
+		int mode{ 0 };
+	};
+
 	[[nodiscard]] static Settings* GetSingleton()
 	{
 		static Settings singleton;
 		return &singleton;
 	}
+
 
 	void LoadSettings()
 	{
@@ -54,6 +62,8 @@ public:
 
 		opacity.min = ini.GetDoubleValue("Opacity", "Min", 0.0);
 		opacity.max = ini.GetDoubleValue("Opacity", "Max", 100.0);
+
+		smoothCam.mode = ini.GetLongValue("SmoothCam", "Mode");
 	}
 
 	[[nodiscard]] int GetCrosshairMode() const { return crosshair.mode; }
@@ -66,6 +76,8 @@ public:
 
 	[[nodiscard]] double GetMinOpacity() const { return opacity.min; }
 	[[nodiscard]] double GetMaxOpacity() const { return opacity.max; }
+
+	[[nodiscard]] int GetSmoothCamMode() const { return smoothCam.mode; };
 
 private:
 	struct detail
@@ -91,4 +103,5 @@ private:
 	Spells     spells;
 	Fade       fade;
 	Opacity    opacity;
+	SmoothCam  smoothCam;
 };
