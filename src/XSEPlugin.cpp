@@ -90,15 +90,13 @@ void InitializeLog()
 	spdlog::set_pattern("[%l] %v"s);
 }
 
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
+EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
 #ifndef NDEBUG
 	while (!IsDebuggerPresent()) {};
 #endif
 
-#ifdef SKYRIMAE
 	InitializeLog();
-#endif
 
 	logger::info("Loaded plugin");
 
@@ -109,35 +107,18 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	return true;
 }
 
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
-{
-	InitializeLog();
-
-	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = Plugin::NAME.data();
-	a_info->version = Plugin::VERSION.pack();
-
-	if (a_skse->IsEditor()) {
-		logger::critical("Loaded in editor, marking as incompatible"sv);
-		return false;
-	}
-
-	const auto ver = a_skse->RuntimeVersion();
-	if (ver != RUNTIME) {
-		logger::critical(FMT_STRING("Unsupported runtime version {}"sv), ver.string());
-		return false;
-	}
-
-	return true;
-}
-
-#ifdef SKYRIMAE
-extern "C" DLLEXPORT constinit SKSE::PluginVersionData SKSEPlugin_Version = []() {
+EXTERN_C [[maybe_unused]] __declspec(dllexport) constinit auto SKSEPlugin_Version = []() noexcept {
 	SKSE::PluginVersionData v;
-	v.PluginVersion(Plugin::VERSION);
-	v.PluginName(Plugin::NAME);
+	v.PluginName("PluginName");
+	v.PluginVersion({ 1, 0, 0, 0 });
 	v.UsesAddressLibrary(true);
-
 	return v;
 }();
-#endif
+
+EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, SKSE::PluginInfo* pluginInfo)
+{
+	pluginInfo->name = SKSEPlugin_Version.pluginName;
+	pluginInfo->infoVersion = SKSE::PluginInfo::kVersion;
+	pluginInfo->version = SKSEPlugin_Version.pluginVersion;
+	return true;
+}
