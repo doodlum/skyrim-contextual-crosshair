@@ -8,11 +8,17 @@ public:
 	struct Crosshair
 	{
 		int mode{ 0 };
+		double min{ 0.00 };
+		double max{ 100.00 };
 	};
 
 	struct SneakMeter
 	{
 		int mode{ 0 };
+		double min{ 0.00 };
+		double max{ 90.00 };
+		double range{ 0.1 };
+		double frequency{ 0.2 };
 	};
 
 	struct Spells
@@ -25,11 +31,6 @@ public:
 		double time{ 1.00 };
 	};
 
-	struct Opacity
-	{
-		double min{ 0.00 };
-		double max{ 100.00 };
-	};
 
 	struct SmoothCam
 	{
@@ -53,15 +54,18 @@ public:
 		ini.LoadFile(path);
 
 		crosshair.mode = ini.GetLongValue("Crosshair", "Mode");
+		crosshair.min = ini.GetDoubleValue("Crosshair", "OpacityMin", 0.0);
+		crosshair.max = ini.GetDoubleValue("Crosshair", "OpacityMax", 100.0);
 
 		sneakMeter.mode = ini.GetLongValue("SneakMeter", "Mode");
+		sneakMeter.min = ini.GetDoubleValue("SneakMeter", "OpacityMin", 0.0);
+		sneakMeter.max = ini.GetDoubleValue("SneakMeter", "OpacityMax", 90.0);
+		sneakMeter.range = ini.GetDoubleValue("SneakMeter", "PulseRange", 0.05);
+		sneakMeter.frequency = ini.GetDoubleValue("SneakMeter", "PulseFrequency", 0.05);
 
 		spells.mode = ini.GetLongValue("Spells", "Mode");
 
 		fade.time = ini.GetDoubleValue("Fade", "Multiplier", 1.0);
-
-		opacity.min = ini.GetDoubleValue("Opacity", "Min", 0.0);
-		opacity.max = ini.GetDoubleValue("Opacity", "Max", 100.0);
 
 		smoothCam.mode = ini.GetLongValue("SmoothCam", "Mode");
 	}
@@ -74,8 +78,14 @@ public:
 
 	[[nodiscard]] double GetFadeMultiplier() const { return fade.time; }
 
-	[[nodiscard]] double GetMinOpacity() const { return opacity.min; }
-	[[nodiscard]] double GetMaxOpacity() const { return opacity.max; }
+	[[nodiscard]] double GetCrosshairMinOpacity() const { return crosshair.min; }
+	[[nodiscard]] double GetCrosshairMaxOpacity() const { return crosshair.max; }
+
+	[[nodiscard]] double GetSneakMeterMinOpacity() const { return sneakMeter.min; }
+	[[nodiscard]] double GetSneakMeterMaxOpacity() const { return sneakMeter.max; }
+
+	[[nodiscard]] double GetSneakMeterRange() const { return sneakMeter.range; }
+	[[nodiscard]] double GetSneakMeterFrequency() const { return sneakMeter.frequency; }
 
 	[[nodiscard]] int GetSmoothCamMode() const { return smoothCam.mode; };
 
@@ -102,6 +112,5 @@ private:
 	SneakMeter sneakMeter;
 	Spells     spells;
 	Fade       fade;
-	Opacity    opacity;
 	SmoothCam  smoothCam;
 };

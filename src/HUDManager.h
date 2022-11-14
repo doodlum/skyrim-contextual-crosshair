@@ -51,7 +51,7 @@ public:
 	bool ValidSpellType(RE::MagicItem* magicItem);
 
 	void UpdateCrosshair(double modAlpha);
-	void UpdateStealthAnim(RE::GFxValue sneakAnim);
+	void UpdateStealthAnim(RE::GFxValue sneakAnim, float modAlpha);
 	void UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim);
 
 

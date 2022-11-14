@@ -30,12 +30,11 @@ bool HUDManager::BTPSCompat()
 	auto ui = RE::UI::GetSingleton();
 	auto hud = ui ? ui->GetMenu<RE::HUDMenu>() : nullptr;
 	auto view = hud ? hud->uiMovie : nullptr;
-	if (view) 
+	if (view)
 		view->GetVariable(std::addressof(object), a_pathToVar);
 
 	return object;
 }
-
 
 void HUDManager::UpdateCrosshair(double modAlpha)
 {
@@ -56,12 +55,11 @@ void HUDManager::UpdateCrosshair(double modAlpha)
 	}
 }
 
-
-void HUDManager::UpdateStealthAnim(RE::GFxValue sneakAnim)
+void HUDManager::UpdateStealthAnim(RE::GFxValue sneakAnim, float modAlpha)
 {
 	RE::GFxValue::DisplayInfo displayInfo;
 	sneakAnim.GetDisplayInfo(std::addressof(displayInfo));
-	displayInfo.SetAlpha(sneakAlpha);
+	displayInfo.SetAlpha(modAlpha);
 	sneakAnim.SetDisplayInfo(displayInfo);
 }
 
@@ -75,7 +73,7 @@ bool HUDManager::ValidCastType(RE::ActorMagicCaster* magicCaster)
 bool HUDManager::ValidAttackType(RE::PlayerCharacter* player)
 {
 	auto equipped = player->GetEquippedObject(true);
-	auto attackState = player->actorState1.meleeAttackState;
+	auto attackState = player->AsActorState()->actorState1.meleeAttackState;
 
 	if (equipped && equipped->GetFormType() == RE::FormType::Weapon) {
 		auto weapon = equipped->As<RE::TESObjectWEAP>();
@@ -90,7 +88,6 @@ bool HUDManager::ValidAttackType(RE::PlayerCharacter* player)
 	return false;
 }
 
-
 bool HUDManager::ValidPickType()
 {
 	if (auto CrosshairPickData = RE::CrosshairPickData::GetSingleton(); CrosshairPickData)
@@ -102,36 +99,36 @@ bool HUDManager::ValidPickType()
 bool HUDManager::ValidDrawnState(RE::PlayerCharacter* player)
 {
 	switch (Settings::GetSingleton()->GetCrosshairMode()) {
-		case 1:
-			if (player->GetWeaponState() == RE::WEAPON_STATE::kDrawn) {
-				bool validWeaponType = false;
+	case 1:
+		if (player->AsActorState()->GetWeaponState() == RE::WEAPON_STATE::kDrawn)
+		{
+			bool validWeaponType = false;
 
-				if (auto equipped = player->GetEquippedObject(true)) {
-					if (auto weapon = equipped->As<RE::TESObjectWEAP>()) {
-						if (weapon->IsBow() || weapon->IsCrossbow())
-							validWeaponType = true;
-						else if (weapon->IsStaff() && weapon->formEnchanting && ValidSpellType(weapon->formEnchanting))
-							validWeaponType = true;
-					}
+			if (auto equipped = player->GetEquippedObject(true)) {
+				if (auto weapon = equipped->As<RE::TESObjectWEAP>()) {
+					if (weapon->IsBow() || weapon->IsCrossbow())
+						validWeaponType = true;
+					else if (weapon->IsStaff() && weapon->formEnchanting && ValidSpellType(weapon->formEnchanting))
+						validWeaponType = true;
 				}
-
-				if (auto equipped = player->GetEquippedObject(false)) {
-					if (auto weapon = equipped->As<RE::TESObjectWEAP>()) {
-						if (weapon->IsStaff() && weapon->formEnchanting && ValidSpellType(weapon->formEnchanting))
-							validWeaponType = true;
-					}
-				}
-
-				if (ValidSpellType(player->selectedSpells[0]) || ValidSpellType(player->selectedSpells[1]))
-					validWeaponType = true;
-
-				return validWeaponType;
 			}
 
-			return false;
+			if (auto equipped = player->GetEquippedObject(false)) {
+				if (auto weapon = equipped->As<RE::TESObjectWEAP>()) {
+					if (weapon->IsStaff() && weapon->formEnchanting && ValidSpellType(weapon->formEnchanting))
+						validWeaponType = true;
+				}
+			}
+			if (ValidSpellType(player->GetActorRuntimeData().selectedSpells[0]) || ValidSpellType(player->GetActorRuntimeData().selectedSpells[1]))
+				validWeaponType = true;
 
-		case 2:
-			return player->GetWeaponState() == RE::WEAPON_STATE::kDrawn;
+			return validWeaponType;
+		}
+
+		return false;
+
+	case 2:
+		return player->AsActorState()->GetWeaponState() == RE::WEAPON_STATE::kDrawn;
 	}
 
 	return false;
@@ -143,29 +140,28 @@ bool SpellContainsArchtype(RE::MagicItem* magicItem, RE::EffectSetting::Archetyp
 		if (effect->baseEffect && effect->baseEffect->HasArchetype(archetype))
 			return true;
 	return false;
-
 }
 
-bool HUDManager::ValidSpellType(RE::MagicItem* magicItem) 
+bool HUDManager::ValidSpellType(RE::MagicItem* magicItem)
 {
 	if (magicItem) {
 		switch (Settings::GetSingleton()->GetSpellsMode()) {
-			case 0:
-				return ((magicItem->GetDelivery() == RE::MagicSystem::Delivery::kAimed) && (magicItem->GetCastingType() != RE::MagicSystem::CastingType::kConcentration)) || SpellContainsArchtype(magicItem, RE::EffectSetting::Archetype::kTelekinesis);
-		
-			case 1:
-				return true;
+		case 0:
+			return ((magicItem->GetDelivery() == RE::MagicSystem::Delivery::kAimed) && (magicItem->GetCastingType() != RE::MagicSystem::CastingType::kConcentration)) || SpellContainsArchtype(magicItem, RE::EffectSetting::Archetype::kTelekinesis);
 
+		case 1:
+			return true;
 		}
 	}
 	return false;
 }
 
+long double timer = 0;
+#define M_PI 3.14159265358979323846
 
 void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, RE::GFxValue sneakAnim)
 {
 	auto settings = Settings::GetSingleton();
-
 	auto SmoothCam = SmoothCamCompat();
 	auto TDM = TDMCompat();
 	auto DetectionMeter = DetectionMeterCompat();
@@ -173,24 +169,31 @@ void HUDManager::UpdateHUD(RE::PlayerCharacter* player, double detectionLevel, R
 
 	fadeMult = settings->GetFadeMultiplier();
 
-	auto fadeIn = !(SmoothCam || TDM) && (ValidDrawnState(player) || ValidCastType(player->magicCasters[0]) || ValidCastType(player->magicCasters[1]) || ValidAttackType(player));
-	
-	fadeMult = std::lerp(prevFadeMult, fadeIn ? fadeMult : fadeMult * 8, prevDelta / fadeMult);
+	auto fadeIn = !(SmoothCam || TDM) && (ValidDrawnState(player) || ValidCastType(player->GetActorRuntimeData().magicCasters[0]) || ValidCastType(player->GetActorRuntimeData().magicCasters[1]) || ValidAttackType(player));
+
+	fadeMult = std::lerp(prevFadeMult, fadeIn ? fadeMult: fadeMult * 16, prevDelta / fadeMult);
 	prevFadeMult = fadeMult;
+
+	timer += prevDelta;
 
 	alpha = std::lerp(alpha, (fadeIn || (ValidPickType() && !BTPS)) ? (!TDM && (fadeIn || SmoothCam) ? 100.0 : 50.0) : 0.0, prevDelta * fadeMult);
 
-	auto modAlpha = (alpha * 0.01 * (settings->GetMaxOpacity() - settings->GetMinOpacity())) + settings->GetMinOpacity();
+	auto modAlpha = (alpha * 0.01 * (settings->GetCrosshairMaxOpacity() - settings->GetCrosshairMinOpacity())) + settings->GetCrosshairMinOpacity();
 
 	if (player->IsSneaking()) {
-		if (settings->GetSneakMeterMode()) 
+		if (settings->GetSneakMeterMode())
 			detectionLevel = 100.0;
-		sneakAlpha = std::lerp(sneakAlpha, !((SmoothCam && settings->GetSmoothCamMode() == 0) || TDM) ? std::clamp(DetectionMeter ? modAlpha : detectionLevel + modAlpha, 0.0, 100.0) : DetectionMeter ? 0.0 : detectionLevel / 2, prevDelta * fadeMult);
-		sneakAlpha = max(modAlpha, sneakAlpha);
+		double newAlpha = !((SmoothCam && settings->GetSmoothCamMode() == 0) || TDM) ? std::clamp(DetectionMeter ? modAlpha : detectionLevel + modAlpha, 0.0, 100.0) : DetectionMeter ? 0.0 : detectionLevel / 2;
+		newAlpha = (newAlpha * 0.01 * (settings->GetSneakMeterMaxOpacity() - settings->GetSneakMeterMinOpacity())) +  settings->GetSneakMeterMinOpacity();
+		sneakAlpha = std::lerp(sneakAlpha, newAlpha, prevDelta * fadeMult);
+		auto detectionFreq = (detectionLevel / 200) + 0.5f;
+		auto pulse = (settings->GetSneakMeterRange() * sin(2 * (M_PI * 2) * detectionFreq * settings->GetSneakMeterFrequency() * 0.25f * timer)) + (1.0f - settings->GetSneakMeterRange());
+		sneakAlpha *= min((double)pulse, 1.0f);
+		sneakAlpha = max(alpha * 0.01 * settings->GetSneakMeterMaxOpacity(), sneakAlpha);
 	} else {
 		sneakAlpha = std::lerp(sneakAlpha, 0.0, prevDelta * 16);
 	}
 
 	UpdateCrosshair(modAlpha);
-	UpdateStealthAnim(sneakAnim);
+	UpdateStealthAnim(sneakAnim, (float)sneakAlpha);
 }
