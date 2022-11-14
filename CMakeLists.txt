@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(
 	ContextualCrosshair
-	VERSION 1.2.3
+	VERSION 1.3.0
 	LANGUAGES CXX
 )
 
