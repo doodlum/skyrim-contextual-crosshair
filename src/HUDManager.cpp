@@ -77,8 +77,11 @@ bool HUDManager::ValidAttackType(RE::PlayerCharacter* player)
 
 	if (equipped && equipped->GetFormType() == RE::FormType::Weapon) {
 		auto weapon = equipped->As<RE::TESObjectWEAP>();
-		if (weapon->IsBow() || weapon->IsCrossbow())
+		if (weapon->IsBow()) {
 			return attackState == RE::ATTACK_STATE_ENUM::kBowAttached || attackState == RE::ATTACK_STATE_ENUM::kBowDraw || attackState == RE::ATTACK_STATE_ENUM::kBowDrawn || attackState == RE::ATTACK_STATE_ENUM::kBowReleasing || attackState == RE::ATTACK_STATE_ENUM::kBowReleased || attackState == RE::ATTACK_STATE_ENUM::kNextAttack || attackState == RE::ATTACK_STATE_ENUM::kBowNextAttack;
+		} else if (weapon->IsCrossbow()) {
+			return attackState == RE::ATTACK_STATE_ENUM::kBowDraw || attackState == RE::ATTACK_STATE_ENUM::kBowDrawn || attackState == RE::ATTACK_STATE_ENUM::kBowReleasing || attackState == RE::ATTACK_STATE_ENUM::kBowReleased || attackState == RE::ATTACK_STATE_ENUM::kNextAttack;
+		}
 	}
 	return false;
 }
