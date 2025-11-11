@@ -20,6 +20,10 @@ bool HUDManager::SmoothCamCompat()
 	if (IFPVCompat())
 		return false;
 
+	// Don't treat fake first-person as SmoothCam compatibility - it should behave like vanilla first person
+	if (IsFakeFirstPerson())
+		return false;
+
 	if (g_SmoothCam && g_SmoothCam->IsCameraEnabled())
 		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
 			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
