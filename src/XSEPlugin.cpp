@@ -1,4 +1,3 @@
-
 #include "Hooks.h"
 #include "HUDManager.h"
 
@@ -32,7 +31,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			else
 				logger::info("Unable to acquire BTPS API");
 
-			if (HUDManager::GetSingleton()->g_DetectionMeter = LoadLibrary(L"Data/SKSE/Plugins/MaxsuDetectionMeter.dll"))
+			HUDManager::GetSingleton()->g_DetectionMeter = LoadLibraryA("Data/SKSE/Plugins/MaxsuDetectionMeter.dll");
+			if (HUDManager::GetSingleton()->g_DetectionMeter)
 				logger::info("Obtained Detection Meter DLL");
 			else
 				logger::info("Unable to acquire Detection Meter DLL");
