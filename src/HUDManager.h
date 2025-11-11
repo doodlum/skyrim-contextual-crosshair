@@ -18,6 +18,7 @@ public:
 	TDM_API::IVTDM2*            g_TDM = nullptr;
 	BTPS_API_decl::API_V0*      g_BTPS = nullptr;
 	HMODULE						g_DetectionMeter = nullptr;
+	RE::TESGlobal*              g_IFPV = nullptr;
 
 	bool TDMCompat();
 	bool SmoothCamCompat();
@@ -32,7 +33,13 @@ public:
 
 	double fadeMult = 1.0;
 	double prevFadeMult = 0.0;
-	
+
+    void InitIFPV();
+	bool IFPVCompat() const
+	{
+		return g_IFPV && (g_IFPV->value != 0.0f);
+	}
+
 	[[nodiscard]] static HUDManager* GetSingleton()
 	{
 		static HUDManager singleton;
