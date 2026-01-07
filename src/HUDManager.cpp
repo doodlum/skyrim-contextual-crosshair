@@ -1,5 +1,14 @@
 #include "HUDManager.h"
 
+void HUDManager::InitIFPV()
+{
+	if (!g_IFPV) {
+		auto dataHandler = RE::TESDataHandler::GetSingleton();
+		if (dataHandler)
+			g_IFPV = dataHandler->LookupForm<RE::TESGlobal>(0x801, "IFPVDetector.esl");
+	}
+}
+
 bool HUDManager::TDMCompat()
 {
 	return g_TDM && g_TDM->GetTargetLockState();
@@ -7,6 +16,14 @@ bool HUDManager::TDMCompat()
 
 bool HUDManager::SmoothCamCompat()
 {
+	// Don't treat IFPV as SmoothCam compatibility - it should behave like vanilla first person
+	if (IFPVCompat())
+		return false;
+
+	// Don't treat fake first-person as SmoothCam compatibility - it should behave like vanilla first person
+	if (IsFakeFirstPerson())
+		return false;
+
 	if (g_SmoothCam && g_SmoothCam->IsCameraEnabled())
 		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
 			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
