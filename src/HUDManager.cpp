@@ -26,7 +26,7 @@ bool HUDManager::SmoothCamCompat()
 
 	if (g_SmoothCam && g_SmoothCam->IsCameraEnabled())
 		if (auto PlayerCamera = RE::PlayerCamera::GetSingleton(); PlayerCamera)
-			return PlayerCamera->currentState == PlayerCamera->cameraStates[RE::CameraState::kThirdPerson];
+			return PlayerCamera->IsCurrentState(RE::CameraState::kThirdPerson, RE::CameraState::kVRThirdPerson);
 	return false;
 }
 
@@ -106,8 +106,8 @@ bool HUDManager::ValidAttackType(RE::PlayerCharacter* player)
 bool HUDManager::ValidPickType()
 {
 	if (auto CrosshairPickData = RE::CrosshairPickData::GetSingleton(); CrosshairPickData)
-		if (auto refr = CrosshairPickData->target.get(); refr)
-			return refr->GetFormType() != RE::FormType::ActorCharacter || refr.get()->As<RE::Actor>()->IsDead();
+		if (auto refr = CrosshairPickData->GetActiveTarget().get(); refr)
+			return refr->GetFormType() != RE::FormType::ActorCharacter || refr->As<RE::Actor>()->IsDead();
 	return false;
 }
 
